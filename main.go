@@ -4,12 +4,36 @@ import (
 	"fmt"
 )
 
+type Reporter interface {
+	Summary() string
+}
+
 type Student struct {
 	Name  string
 	Score float64
 	Grade string
 }
 
+type ClassReport struct {
+	Students []Student
+	Highest  float64
+	Avg      float64
+}
+
+func (c ClassReport) Summary() string {
+	sentence := fmt.Sprintf("Class Report: %v students | Highest: %.2f | Avg: %.2f\n", len(c.Students), c.Highest, c.Avg)
+	return sentence
+}
+
+func (s Student) Summary() string {
+	sentence := fmt.Sprintf("%v | %.2f | %v | %v \n", s.Name, s.Score, s.Grade, s.isPassing())
+	return sentence
+}
+
+func printSummary(r Reporter) {
+	fmt.Print(r.Summary())
+
+}
 func calcStats(students []Student) (float64, float64) {
 	var highest float64 = -1
 	var total float64 = 0
@@ -68,18 +92,18 @@ func (s Student) getGrade() string {
 	return grade
 }
 
-func (s Student) isPassing() bool {
-	return s.Score >= 60
-}
-
-func (s Student) display() {
+func (s Student) isPassing() string {
 	var status string
-	if s.isPassing() {
+	if s.Score >= 60 {
 		status = "Pass"
 	} else {
 		status = "Fail"
 	}
-	fmt.Printf("Name:%v | Score:%v | Grade:%v | Status:%v\n", s.Name, s.Score, s.Grade, status)
+	return status
+}
+
+func (s Student) display() {
+	fmt.Printf("Name:%v | Score:%v | Grade:%v | Status:%v\n", s.Name, s.Score, s.Grade, s.isPassing())
 }
 
 func (s *Student) updateScore(newScore float64) {
@@ -108,4 +132,13 @@ func main() {
 	students[1].display()
 
 	aboveAvg(students, avg)
+
+	classReport := ClassReport{
+		Students: students,
+		Highest:  highest,
+		Avg:      avg,
+	}
+	printSummary(students[0])
+	printSummary(classReport)
+
 }
